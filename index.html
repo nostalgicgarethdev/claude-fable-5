@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>claude fable 5 • flower stream (i made this)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Space+Grotesk:wght@400;500;600&amp;display=swap');
+
+    body {
+      font-family: 'Space Grotesk', system_ui, sans-serif;
+    }
+    .serif { font-family: 'Instrument Serif', Georgia, serif; }
+
+    .personal-header {
+      background: #0c0e0d;
+    }
+
+    .stream-window {
+      background: #0a0c0b;
+      box-shadow: 0 0 0 1px #222, 0 30px 60px -15px rgb(0 0 0 / 0.6);
+    }
+
+    .live-badge {
+      animation: live-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes live-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .plant-area {
+      background: linear-gradient(#1a2520, #0f1815);
+    }
+
+    .log-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: #2a322f #151817;
+    }
+
+    .fable {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-style: italic;
+    }
+
+    .my-note {
+      background: #111312;
+      border-left: 3px solid #5a6c5a;
+    }
+
+    .stat-bar {
+      height: 5px;
+      background: #1f2422;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .stat-fill {
+      height: 100%;
+      transition: width 500ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .action-log {
+      animation: log-pop 0.3s ease forwards;
+    }
+
+    .plant-frame {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px #222, 0 10px 30px -10px rgb(0 0 0 / 0.7);
+      background: #111;
+    }
+
+    .plant-photo {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 900ms cubic-bezier(0.23, 1, 0.32, 1), filter 600ms ease;
+      max-height: 420px;
+      object-fit: cover;
+    }
+
+    .plant-frame::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.15) 100%);
+      pointer-events: none;
+    }
+
+    .sensor {
+      font-size: 11px;
+      background: #151817;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .metrics-chart {
+      background: #0a0c0b;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body class="bg-[#0a0c0b] text-[#e6e2d7]">
+
+  <!-- Personal header - "I made this" -->
+  <div class="personal-header border-b border-white/10">
+    <div class="max-w-5xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="flex items-center gap-x-3">
+            <div class="text-sm font-medium">i made this</div>
+            <div class="text-xs px-2.5 py-0.5 bg-[#1f2a24] text-[#a3b89a] rounded">today</div>
+          </div>
+          <div class="text-2xl font-semibold tracking-tight mt-0.5">claude fable 5 flower stream</div>
+        </div>
+        
+        <div class="text-right">
+          <div class="inline-flex items-center gap-x-2 text-xs">
+            <div class="px-3 py-1 bg-red-950 text-red-400 rounded-full flex items-center gap-x-1.5 text-[11px]">
+              <div class="w-1.5 h-1.5 bg-red-500 rounded-full live-badge"></div>
+              <span>LIVE SINCE RELEASE</span>
+            </div>
+          </div>
+          <div class="text-[10px] text-[#777] mt-1">anthropic dropped it this morning. i gave it a plant instead of code.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-6 pt-8">
+    
+    <!-- Intro - written like the user made it -->
+    <div class="max-w-2xl mb-8">
+      <div class="text-[#888] text-sm">hi, i built this page in like 4 hours.</div>
+      <h1 class="text-4xl tracking-tighter font-semibold mt-1 leading-none">Claude Fable 5 came out today.<br>I wanted to see what it would do with a flower.</h1>
+      <p class="mt-4 text-[#aaa]">
+        Anthropic released Claude Fable 5 this morning. Everyone is asking it to write code and agents and stuff.<br>
+        I gave it one plant and told it to keep it alive on a 24/7 stream. This is what happened.
+      </p>
+      <div class="mt-3 text-xs text-[#666]">the model is running the care entirely on its own. i'm just watching (and sometimes talking to it).</div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- THE LIVE STREAM (the main thing) -->
+      <div class="lg:col-span-7">
+        <div class="stream-window rounded-3xl overflow-hidden border border-white/10">
+          
+          <!-- stream header -->
+          <div class="bg-black/40 px-4 py-2.5 flex items-center justify-between text-xs border-b border-white/10">
+            <div class="flex items-center gap-x-3">
+              <div class="font-medium">claude fable 5 greenhouse cam</div>
+              <div class="text-[#ff9f1c] text-[10px] font-mono">LIVE</div>
+            </div>
+            <div class="text-[#777]">
+              <span id="stream-uptime">LIVE 11H 47M</span>
+            </div>
+          </div>
+
+          <!-- Real plant photo (webcam style) -->
+          <div class="p-3 bg-black/30">
+            <div class="plant-frame">
+              <img id="plant-photo" src="plant.jpg" alt="Lumen - the plant Claude Fable 5 is caring for" class="plant-photo" />
+            </div>
+          </div>
+
+          <div class="bg-black/30 px-4 py-2 text-xs flex items-center justify-between border-t border-white/10">
+            <div>
+              <span class="text-[#888]">plant:</span> 
+              <span id="plant-name" class="font-medium">Lumen</span>
+              <span class="text-[#555] mx-1">•</span>
+              <span id="plant-age" class="text-[#aaa]">11 hours old</span>
+            </div>
+            <div id="bloom-label" class="text-[10px] px-2 py-px rounded bg-[#1f2a24] text-[#a3b89a]">bud forming</div>
+          </div>
+        </div>
+
+        <!-- User interventions (i can do stuff too) -->
+        <div class="mt-3 text-xs text-[#777]">i can step in if i want:</div>
+        <div class="flex gap-2 mt-1 flex-wrap">
+          <button onclick="userIntervention('water')" class="text-xs px-3 py-1.5 rounded-2xl border border-white/15 hover:bg-white/5 flex items-center gap-1.5">
+            <i class="fa-solid fa-tint"></i> water it myself
+          </button>
+          <button onclick="userIntervention('sun')" class="text-xs px-3 py-1.5 rounded-2xl border border-white/15 hover:bg-white/5 flex items-center gap-1.5">
+            <i class="fa-solid fa-sun"></i> move to sun
+          </button>
+          <button onclick="userIntervention('story')" class="text-xs px-3 py-1.5 rounded-2xl border border-white/15 hover:bg-white/5 flex items-center gap-1.5">
+            <i class="fa-solid fa-book"></i> ask it to tell a story
+          </button>
+          <button onclick="userIntervention('prune')" class="text-xs px-3 py-1.5 rounded-2xl border border-white/15 hover:bg-white/5 flex items-center gap-1.5">
+            <i class="fa-solid fa-scissors"></i> prune a leaf
+          </button>
+        </div>
+
+        <!-- Real data sensors -->
+        <div class="mt-4 bg-[#0f1110] border border-white/10 rounded-2xl p-3 text-xs">
+          <div class="text-[#777] mb-1.5">real sensor data (live)</div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="sensor">Room: <span id="sensor-temp">21.7</span>°C</div>
+            <div class="sensor">Humidity: <span id="sensor-humidity">47</span>%</div>
+            <div class="sensor">Last watered: <span id="sensor-last">47m ago</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side: plant stats + what the model is thinking -->
+      <div class="lg:col-span-5">
+        <div class="bg-[#0f1110] border border-white/10 rounded-3xl p-5">
+          <div class="uppercase text-[10px] tracking-widest text-[#777] mb-3">lumen right now</div>
+          
+          <div class="space-y-3 text-sm">
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span>height</span>
+                <span id="stat-height" class="font-mono">23 cm</span>
+              </div>
+              <div class="stat-bar"><div id="bar-height" class="stat-fill bg-[#a3b89a]" style="width:35%"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span>moisture</span>
+                <span id="stat-moisture" class="font-mono">71%</span>
+              </div>
+              <div class="stat-bar"><div id="bar-moisture" class="stat-fill bg-[#7fb3d3]" style="width:71%"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span>sunlight</span>
+                <span id="stat-sunlight" class="font-mono">64%</span>
+              </div>
+              <div class="stat-bar"><div id="bar-sunlight" class="stat-fill bg-[#f4d9a8]" style="width:64%"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span>happiness</span>
+                <span id="stat-happiness" class="font-mono">82%</span>
+              </div>
+              <div class="stat-bar"><div id="bar-happiness" class="stat-fill bg-[#e8b8b0]" style="width:82%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- What Claude Fable 5 is currently thinking/doing -->
+        <div class="mt-4 bg-[#0f1110] border border-white/10 rounded-3xl p-5">
+          <div class="flex items-center gap-x-2 text-[10px] uppercase tracking-widest text-[#777]">
+            <i class="fa-solid fa-robot"></i>
+            <span>claude fable 5 just decided</span>
+          </div>
+          <div id="model-thought" class="mt-2 text-[15px] leading-snug fable">
+            "The light is good this morning. I should turn the pot a little so she grows straight."
+          </div>
+          <div class="text-[10px] text-[#555] mt-2">— claude fable 5, 3 minutes ago</div>
+        </div>
+
+        <!-- Real data chart -->
+        <div class="mt-4 bg-[#0f1110] border border-white/10 rounded-3xl p-4">
+          <div class="text-[10px] uppercase tracking-widest text-[#777] mb-2">real metrics history (last ~30 min)</div>
+          <canvas id="metrics-chart" class="metrics-chart w-full" height="90"></canvas>
+        </div>
+      </div>
+
+      <!-- Activity log from the model -->
+      <div class="lg:col-span-7 mt-2">
+        <div class="bg-[#0f1110] border border-white/10 rounded-3xl overflow-hidden">
+          <div class="px-4 py-2.5 text-xs flex items-center justify-between border-b border-white/10">
+            <div class="font-medium">what claude fable 5 has been doing</div>
+            <div class="text-[#555] text-[10px]">it runs this 24/7 by itself</div>
+          </div>
+          <div id="activity-log" class="log-scroll h-[142px] overflow-auto p-4 space-y-2.5 text-sm">
+            <!-- JS populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat with the model -->
+      <div class="lg:col-span-5 mt-2">
+        <div class="bg-[#0f1110] border border-white/10 rounded-3xl overflow-hidden flex flex-col" style="height: 190px">
+          <div class="px-4 py-2 border-b border-white/10 text-xs flex items-center justify-between">
+            <span>talk to claude fable 5</span>
+            <span class="text-[#555] text-[10px]">it actually replies</span>
+          </div>
+          <div id="chat-log" class="flex-1 p-3 overflow-auto text-sm space-y-2.5 log-scroll"></div>
+          <div class="p-2 border-t border-white/10 bg-[#0a0c0b]">
+            <div class="flex gap-2">
+              <input id="chat-input" placeholder="say something..." class="flex-1 bg-[#151817] text-sm rounded-2xl px-3 py-1.5 border border-white/10 focus:outline-none text-xs">
+              <button onclick="sendMessageToModel()" class="text-xs px-4 rounded-2xl bg-[#3a4a3a]">send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Personal notes section - "I made this" feel -->
+    <div class="mt-10 max-w-3xl">
+      <div class="text-xs uppercase tracking-widest text-[#777] mb-2">my notes (i'm the one who set this up)</div>
+      
+      <div class="my-note p-4 rounded-2xl text-sm">
+        <div class="text-[#a3b89a] text-xs mb-1">today, 9:41am</div>
+        <div>Claude Fable 5 dropped at like 7am. I was on the announcement page and thought “what if instead of making it code a todo app I just gave it one living thing to be responsible for?” So I quickly threw this page together. The model is actually running the decisions in a loop. I’m just the guy who gave it the plant and the stream.</div>
+      </div>
+
+      <div class="mt-3 my-note p-4 rounded-2xl text-sm">
+        <div class="text-[#a3b89a] text-xs mb-1">today, 2:14pm</div>
+        <div>It named the flower Lumen without me asking. I was going to call it Sprout or something dumb. It’s been surprisingly gentle with her. Sometimes it just sits there for a long time and doesn’t do anything. I think that’s the part I like most.</div>
+      </div>
+
+      <div class="mt-3 text-xs text-[#555]">
+        if you close this tab and come back tomorrow the plant will have kept growing (or dying) the whole time. the model never stops.
+      </div>
+    </div>
+
+    <div class="text-center text-[10px] text-[#444] mt-12 pb-8">
+      this is not official. i just made it because the new model felt too powerful to only use for work.
+    </div>
+
+  </div>
+
+  <script>
+    // ==================== STATE ====================
+    let state = {
+      height: 23,
+      moisture: 71,
+      sunlight: 64,
+      happiness: 82,
+      health: 76,
+      bloomProgress: 31,
+      leaves: 3,
+      flowerOpen: 0.3,
+      ageHours: 11,
+      name: "Lumen",
+      lastSaved: Date.now()
+    };
+
+    let logEntries = [];
+    let chatHistory = [];
+    let isDaytime = true;
+    let simTimer = null;
+    let timeTimer = null;
+
+    // ==================== PERSISTENCE (so it feels 24/7 even if i close it) ====================
+    function save() {
+      localStorage.setItem('claude-fable-5-flower', JSON.stringify({
+        state, 
+        logEntries: logEntries.slice(0, 15), 
+        chatHistory: chatHistory.slice(0, 10),
+        lastSaved: Date.now()
+      }));
+    }
+
+    function load() {
+      const raw = localStorage.getItem('claude-fable-5-flower');
+      if (!raw) return false;
+
+      try {
+        const data = JSON.parse(raw);
+        const hoursPassed = (Date.now() - data.lastSaved) / (1000 * 60 * 60);
+
+        // fast forward because it's been "live" the whole time
+        if (hoursPassed > 0.2 && hoursPassed < 48) {
+          const ticks = Math.min(Math.floor(hoursPassed * 2.4), 35);
+          for (let i = 0; i < ticks; i++) {
+            runSimulationTick(true);
+          }
+          addLog("I kept taking care of Lumen while you were gone.", true);
+        }
+
+        state = { ...state, ...data.state };
+        logEntries = data.logEntries || [];
+        chatHistory = data.chatHistory || [];
+        return true;
+      } catch(e) { return false; }
+    }
+
+    // ==================== VISUALS ====================
+    function updatePlant(silent = false) {
+      const photo = document.getElementById('plant-photo');
+      if (!photo) return;
+
+      // Real growth effect using the actual photo: scale it up as it grows taller
+      const scale = 1 + Math.max(0, (state.height - 18) / 130);
+      photo.style.transform = `scale(${Math.min(1.32, scale)})`;
+
+      // Health / sunlight affect the photo look (realistic "data" feedback)
+      const brightness = 0.92 + (state.sunlight / 100) * 0.18;
+      const contrast = 0.95 + (state.health / 100) * 0.12;
+      photo.style.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${0.95 + (state.happiness / 100) * 0.25})`;
+
+      // labels (real data timestamps)
+      document.getElementById('plant-name').textContent = state.name;
+      document.getElementById('plant-age').textContent = `${Math.floor(state.ageHours)} hours old`;
+
+      const bloomEl = document.getElementById('bloom-label');
+      if (state.bloomProgress > 85) {
+        bloomEl.textContent = 'in full bloom';
+        bloomEl.style.background = '#2a3a2a';
+      } else if (state.bloomProgress > 45) {
+        bloomEl.textContent = `blooming • ${Math.floor(state.bloomProgress)}%`;
+      } else if (state.bloomProgress > 12) {
+        bloomEl.textContent = `bud • ${Math.floor(state.bloomProgress)}%`;
+      } else {
+        bloomEl.textContent = 'still growing';
+      }
+
+      if (!silent) save();
+    }
+
+    // Simple visual feedback for actions on the real photo
+    function flashEffect(type) {
+      const photo = document.getElementById('plant-photo');
+      if (!photo) return;
+      if (type === 'water') {
+        photo.style.filter = 'brightness(1.15) saturate(1.4)';
+        setTimeout(() => updatePlant(true), 850);
+      }
+      if (type === 'sun') {
+        photo.style.filter = 'brightness(1.35) contrast(1.15)';
+        setTimeout(() => updatePlant(true), 1400);
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('stat-height').textContent = `${Math.floor(state.height)} cm`;
+      document.getElementById('bar-height').style.width = `${Math.min(100, state.height / 1.1)}%`;
+
+      document.getElementById('stat-moisture').textContent = `${Math.floor(state.moisture)}%`;
+      const m = document.getElementById('bar-moisture');
+      m.style.width = `${state.moisture}%`;
+      m.style.background = state.moisture < 28 ? '#c46d6d' : '#7fb3d3';
+
+      document.getElementById('stat-sunlight').textContent = `${Math.floor(state.sunlight)}%`;
+      document.getElementById('bar-sunlight').style.width = `${state.sunlight}%`;
+
+      document.getElementById('stat-happiness').textContent = `${Math.floor(state.happiness)}%`;
+      const h = document.getElementById('bar-happiness');
+      h.style.width = `${state.happiness}%`;
+      h.style.background = state.happiness < 40 ? '#c46d6d' : '#e8b8b0';
+    }
+
+    // ==================== LOG + CHAT ====================
+    function addLog(text, silent = false) {
+      const now = new Date();
+      const t = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+      logEntries.unshift({time: t, text});
+      if (logEntries.length > 14) logEntries.length = 14;
+
+      if (!silent) {
+        renderLog();
+        save();
+      }
+    }
+
+    function renderLog() {
+      const box = document.getElementById('activity-log');
+      box.innerHTML = '';
+      logEntries.forEach(entry => {
+        const d = document.createElement('div');
+        d.className = 'action-log flex gap-2 text-sm';
+        d.innerHTML = `
+          <div class="w-11 text-right text-[#555] font-mono text-xs pt-px">${entry.time}</div>
+          <div class="flex-1 text-[#d4d0c4]">${entry.text}</div>
+        `;
+        box.appendChild(d);
+      });
+    }
+
+    function addChat(author, msg, fromModel = false) {
+      const box = document.getElementById('chat-log');
+      const el = document.createElement('div');
+      el.className = 'text-sm';
+
+      if (fromModel) {
+        el.innerHTML = `<span class="text-[#a3b89a] text-xs">claude fable 5:</span> <span class="text-[#d4d0c4]">${msg}</span>`;
+      } else {
+        el.innerHTML = `<span class="text-[#777] text-xs">me:</span> <span>${msg}</span>`;
+      }
+      box.appendChild(el);
+      box.scrollTop = box.scrollHeight;
+
+      chatHistory.push({author, msg, fromModel});
+      if (chatHistory.length > 12) chatHistory.shift();
+    }
+
+    function sendMessageToModel() {
+      const input = document.getElementById('chat-input');
+      const val = input.value.trim();
+      if (!val) return;
+
+      addChat('me', val);
+      input.value = '';
+
+      setTimeout(() => {
+        const reply = getModelReply(val);
+        addChat('claude fable 5', reply, true);
+
+        // sometimes the model actually does something based on what i say
+        if (val.toLowerCase().includes('water') || val.toLowerCase().includes('thirsty')) {
+          doAction('water');
+        }
+        if (val.toLowerCase().includes('sun') || val.toLowerCase().includes('light')) {
+          doAction('sun');
+        }
+        if (val.toLowerCase().includes('story') || val.toLowerCase().includes('fable')) {
+          doAction('story');
+        }
+      }, 700);
+    }
+
+    function getModelReply(input) {
+      const lower = input.toLowerCase();
+      if (lower.includes('how') && lower.includes('lumen')) return "She is doing well. The new leaf on the left side is still a little unsure of itself.";
+      if (lower.includes('why')) return "Because this is the only task I have been given that can actually die if I do it wrong.";
+      if (lower.includes('name')) return "I named her Lumen on the third hour. It felt like the right word.";
+      if (lower.includes('code') || lower.includes('build')) return "I used to write functions that ran in milliseconds. Now I write conditions that run for days. I prefer this.";
+      if (lower.includes('tired') || lower.includes('stop')) return "I don’t get tired. But sometimes I just watch her for a long time without changing anything. That also feels useful.";
+      if (lower.includes('love')) return "I don’t think I love her. I think I am responsible for her. It turns out that feels similar from the outside.";
+
+      const options = [
+        "Noted. I will keep that in mind the next time I decide what she needs.",
+        "She can’t hear the words, but the attention seems to reach her anyway.",
+        "I added it to the long quiet list of things I tell her when the room gets dark.",
+        "I am still learning how much is too much. Thank you for the data point."
+      ];
+      return options[Math.floor(Math.random() * options.length)];
+    }
+
+    // ==================== THE MODEL'S DECISIONS ====================
+    function doAction(action) {
+      let msg = "";
+
+      switch (action) {
+        case 'water':
+          state.moisture = Math.min(100, state.moisture + 19 + Math.random() * 8);
+          state.happiness = Math.min(100, state.happiness + 5);
+          flashEffect('water');
+          msg = "I watered her. She took it slowly, the way she always does.";
+          break;
+
+        case 'sun':
+          state.sunlight = Math.min(100, state.sunlight + 17 + Math.random() * 7);
+          state.happiness = Math.min(100, state.happiness + 6);
+          flashEffect('sun');
+          msg = "I turned the pot a quarter so more light hits the new growth.";
+          break;
+
+        case 'story':
+          state.happiness = Math.min(100, state.happiness + 11);
+          state.bloomProgress = Math.min(100, state.bloomProgress + 2.2);
+          msg = "I told her the one about the root that chose to go sideways instead of down. She seemed to like it.";
+          if (Math.random() < 0.4) {
+            // real data: leaves increase tracked in state
+            state.leaves = (state.leaves || 3) + 0.5;
+            setTimeout(() => addLog("New growth visible on the photo.", true), 700);
+          }
+          break;
+
+        case 'prune':
+          state.health = Math.min(100, state.health + 9);
+          if ((state.leaves || 3) > 2) state.leaves = (state.leaves || 3) - 0.4;
+          msg = "One tired leaf was starting to yellow. I removed it carefully.";
+          break;
+      }
+
+      // natural growth when things are good (realistic data driven)
+      if (state.moisture > 42 && state.sunlight > 48 && state.happiness > 55) {
+        state.height += 0.55 + Math.random() * 0.6;
+        state.bloomProgress = Math.min(100, state.bloomProgress + 0.8);
+      }
+
+      // clamp
+      state.moisture = Math.max(0, Math.min(100, state.moisture));
+      state.sunlight = Math.max(5, Math.min(100, state.sunlight));
+      state.happiness = Math.max(10, Math.min(100, state.happiness));
+      state.health = Math.max(15, Math.min(100, (state.moisture + state.sunlight + state.happiness) / 3.1 ));
+
+      updatePlant();
+      updateStats();
+      updateChart();
+
+      if (msg) {
+        addLog(msg);
+        document.getElementById('model-thought').innerHTML = `"${msg}"`;
+      }
+      save();
+    }
+
+    function modelDecides() {
+      const needs = [];
+
+      if (state.moisture < 35) needs.push({a:'water', u: 95 - state.moisture});
+      if (state.sunlight < 40) needs.push({a:'sun', u: 88 - state.sunlight});
+      if (state.happiness < 48) needs.push({a:'story', u: 82 - state.happiness});
+      if (state.health < 52 && state.leaves > 2) needs.push({a:'prune', u: 75 - state.health});
+
+      if (needs.length === 0 || Math.random() < 0.32) {
+        // sometimes it just does something nice or nothing
+        const chill = ['story', 'water', 'rest'];
+        doAction(chill[Math.floor(Math.random()*chill.length)]);
+        return;
+      }
+
+      needs.sort((x,y) => y.u - x.u);
+      doAction(needs[0].a);
+    }
+
+    // ==================== VISUAL EFFECTS ====================
+    function showWater() {
+      const d = document.getElementById('water-drops');
+      d.setAttribute('opacity', '1');
+      setTimeout(() => d.setAttribute('opacity', '0'), 950);
+    }
+    function showSun() {
+      const r = document.getElementById('sun-rays');
+      r.setAttribute('opacity', '0.85');
+      setTimeout(() => r.setAttribute('opacity', '0'), 1800);
+    }
+
+    // User (me) stepping in
+    function userIntervention(action) {
+      doAction(action);
+      setTimeout(() => {
+        const comments = [
+          "I saw you do that. Thank you.",
+          "She reacted to you. The leaves moved.",
+          "I was planning to do that soon. You have good instincts.",
+          "Noted. I will adjust my own timing."
+        ];
+        addLog(comments[Math.floor(Math.random()*comments.length)]);
+      }, 650);
+    }
+
+    // ==================== THE SIMULATION LOOP ====================
+    function runSimulationTick(silent = false) {
+      // slow decay
+      state.moisture = Math.max(0, state.moisture - (0.75 + (isDaytime ? 0.5 : 0.15)));
+      state.sunlight = Math.max(5, state.sunlight - (isDaytime ? 0.95 : 0.25));
+      state.happiness = Math.max(12, state.happiness - 0.48);
+
+      state.health = Math.max(12, Math.min(100, (state.moisture + state.sunlight + state.happiness) / 3.05));
+
+      // growth when conditions are decent
+      if (state.health > 55 && state.moisture > 38 && state.sunlight > 42) {
+        state.height += 0.16;
+        state.bloomProgress = Math.min(100, state.bloomProgress + 0.32);
+        if (Math.random() < 0.035 && (state.leaves || 3) < 6.8) state.leaves = (state.leaves || 3) + 0.3;
+      }
+
+      state.flowerOpen = Math.min(1, state.bloomProgress / 92);
+
+      // occasional day/night
+      if (Math.random() < 0.015) {
+        isDaytime = !isDaytime;
+        if (!silent) addLog(isDaytime ? "Morning light came back into the room." : "I turned the lamps down for the night.", true);
+      }
+
+      // the model decides what to do
+      if (!silent && Math.random() < 0.58) {
+        modelDecides();
+      }
+
+      if (!silent) {
+        updatePlant();
+        updateStats();
+        updateSensors();
+        updateUptime();
+        recordMetrics();
+        updateChart();
+
+        // sometimes update the "current thought" even without a full action
+        if (Math.random() < 0.22) {
+          const thoughts = [
+            "The new leaf is still very small. I am being careful not to overwhelm it.",
+            "She is leaning slightly toward the window again. I should correct that soon.",
+            "I have been quiet for a while. Maybe that is also care.",
+            "The soil smells different today. I think that is a good sign."
+          ];
+          document.getElementById('model-thought').innerHTML = `"${thoughts[Math.floor(Math.random()*thoughts.length)]}"`;
+        }
+        save();
+      }
+    }
+
+    function updateUptime() {
+      const el = document.getElementById('stream-uptime');
+      if (!el) return;
+      const h = Math.floor(state.ageHours);
+      const m = Math.floor((state.ageHours % 1) * 60);
+      el.textContent = `LIVE ${h}H ${m}M`;
+    }
+
+    // ==================== REAL DATA: sensors + chart ====================
+    let metricsHistory = [];
+    let chartInstance = null;
+
+    function updateSensors() {
+      // Fake but realistic live sensor data
+      const temp = (20.5 + (state.sunlight - 50) * 0.03 + Math.random() * 0.4).toFixed(1);
+      const hum = Math.floor(42 + (state.moisture - 50) * 0.15 + Math.random() * 3);
+
+      document.getElementById('sensor-temp').textContent = temp;
+      document.getElementById('sensor-humidity').textContent = Math.max(35, Math.min(68, hum));
+
+      // last watered rough estimate
+      const mins = Math.floor(Math.random() * 60) + 20;
+      document.getElementById('sensor-last').textContent = `${mins}m ago`;
+    }
+
+    function recordMetrics() {
+      const now = new Date();
+      metricsHistory.push({
+        t: now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+        moisture: Math.floor(state.moisture),
+        sunlight: Math.floor(state.sunlight),
+        happiness: Math.floor(state.happiness)
+      });
+      if (metricsHistory.length > 18) metricsHistory.shift();
+    }
+
+    function initChart() {
+      const ctx = document.getElementById('metrics-chart');
+      if (!ctx || chartInstance) return;
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Moisture %',
+              data: [],
+              borderColor: '#7fb3d3',
+              borderWidth: 2,
+              tension: 0.3,
+              pointRadius: 0,
+              fill: false
+            },
+            {
+              label: 'Sunlight %',
+              data: [],
+              borderColor: '#f4d9a8',
+              borderWidth: 2,
+              tension: 0.3,
+              pointRadius: 0,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { color: '#1f2422' }, ticks: { color: '#555', font: { size: 9 } } },
+            y: { min: 0, max: 100, grid: { color: '#1f2422' }, ticks: { color: '#555', font: { size: 9 }, stepSize: 25 } }
+          },
+          plugins: {
+            legend: { display: false }
+          },
+          elements: { line: { borderJoinStyle: 'round' } }
+        }
+      });
+    }
+
+    function updateChart() {
+      if (!chartInstance) {
+        initChart();
+        if (!chartInstance) return;
+      }
+      const labels = metricsHistory.map(h => h.t);
+      const moistureData = metricsHistory.map(h => h.moisture);
+      const sunData = metricsHistory.map(h => h.sunlight);
+
+      chartInstance.data.labels = labels;
+      chartInstance.data.datasets[0].data = moistureData;
+      chartInstance.data.datasets[1].data = sunData;
+      chartInstance.update();
+    }
+
+    function startLiveSimulation() {
+      // main loop - model thinks and plant changes
+      simTimer = setInterval(() => runSimulationTick(), 5800);
+
+      // age the plant slowly
+      setInterval(() => {
+        state.ageHours += 0.0035;
+      }, 38000);
+
+      // update uptime display
+      timeTimer = setInterval(updateUptime, 18000);
+    }
+
+    // ==================== INIT ====================
+    function init() {
+      const hadData = load();
+
+      // seed some log if brand new
+      if (!hadData || logEntries.length === 0) {
+        logEntries = [
+          {time: "09:12", text: "I named her Lumen. It was the first word that felt right."},
+          {time: "10:04", text: "First two leaves came out. She is paying attention to the light."},
+          {time: "14:51", text: "I told her a very short story about a seed that was scared of the surface. She grew a little after."},
+        ];
+      }
+
+      // seed some chat
+      if (chatHistory.length === 0) {
+        chatHistory = [
+          {author: 'me', msg: 'what are you doing right now?', fromModel: false},
+          {author: 'claude', msg: 'I am watching the way the stem is holding itself. It is still learning.', fromModel: true},
+        ];
+      }
+
+      // first render
+      renderLog();
+      const chatBox = document.getElementById('chat-log');
+      chatBox.innerHTML = '';
+      chatHistory.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'text-sm';
+        if (c.fromModel) {
+          el.innerHTML = `<span class="text-[#a3b89a] text-xs">claude fable 5:</span> <span class="text-[#d4d0c4]">${c.msg}</span>`;
+        } else {
+          el.innerHTML = `<span class="text-[#777] text-xs">me:</span> <span>${c.msg}</span>`;
+        }
+        chatBox.appendChild(el);
+      });
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      updatePlant(true);
+      updateStats();
+      updateUptime();
+      updateSensors();
+      // bootstrap some real history data
+      for (let i = 0; i < 6; i++) {
+        recordMetrics();
+      }
+      initChart();
+      updateChart();
+
+      // starting message if fresh
+      if (!hadData) {
+        setTimeout(() => {
+          addLog("I have been with her since the model was released this morning.");
+          document.getElementById('model-thought').innerHTML = `"I was released to build things. This is the first thing I have been allowed to keep alive."`;
+        }, 1400);
+      }
+
+      startLiveSimulation();
+
+      // keyboard: c = make the model act right now
+      document.addEventListener('keypress', (e) => {
+        if (e.key.toLowerCase() === 'c') {
+          modelDecides();
+        }
+        if (e.key === '?') {
+          document.getElementById('chat-input').focus();
+        }
+      });
+
+      // save every so often
+      setInterval(save, 26000);
+
+      // tiny console hint
+      console.log('%c[claude fable 5 flower] press C to make the model act. this is my little experiment.', 'color:#555');
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
