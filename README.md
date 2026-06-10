@@ -1,5 +1,7 @@
 # Claude Fable 5 — Flower Stream (I made this)
 
+![Lumen – the plant Claude Fable 5 is autonomously caring for in a 24/7 live stream](plant.jpg)
+
 This is the version where it feels like *I* actually built it the day the model dropped.
 
 ## Concept
