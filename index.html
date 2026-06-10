@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>claude fable 5 • flower stream (i made this)</title>
+  <meta name="description" content="A personal 24/7 live stream experiment. Claude Fable 5 (new Anthropic model released today) is autonomously caring for one plant. Real photo + real sensor data. Built and deployed by me the same day.">
+  <meta property="og:title" content="Claude Fable 5 Flower Stream">
+  <meta property="og:description" content="I gave the new Anthropic model one plant instead of code. This is the live result with real data and a real photo.">
+  <meta property="og:image" content="plant.jpg">
+  <meta name="twitter:card" content="summary_large_image">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -115,6 +120,11 @@
           <div class="flex items-center gap-x-3">
             <div class="text-sm font-medium">i made this</div>
             <div class="text-xs px-2.5 py-0.5 bg-[#1f2a24] text-[#a3b89a] rounded">today</div>
+            <a href="https://github.com/nostalgicgarethdev/claude-fable-5" target="_blank" class="text-xs px-2 py-0.5 border border-white/20 rounded hover:bg-white/5 flex items-center gap-x-1">
+              <i class="fa-brands fa-github"></i>
+              <span>github</span>
+            </a>
+            <span class="text-[10px] text-emerald-400">deployed to github pages</span>
           </div>
           <div class="text-2xl font-semibold tracking-tight mt-0.5">claude fable 5 flower stream</div>
         </div>
@@ -166,6 +176,15 @@
           <div class="p-3 bg-black/30">
             <div class="plant-frame">
               <img id="plant-photo" src="plant.jpg" alt="Lumen - the plant Claude Fable 5 is caring for" class="plant-photo" />
+              <!-- Live stream overlays for real data feel -->
+              <div class="absolute top-3 left-3 px-2 py-0.5 bg-black/70 text-red-400 text-[10px] font-mono rounded flex items-center gap-x-1">
+                <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                <span>LIVE</span>
+              </div>
+              <div class="absolute top-3 right-3 text-[10px] font-mono bg-black/70 px-1.5 py-0.5 rounded text-[#aaa]">
+                <span id="photo-timestamp">LIVE</span>
+              </div>
+              <div class="absolute bottom-3 left-3 text-[10px] text-white/70 font-mono bg-black/50 px-1.5 py-px rounded">LUMEN • REAL PLANT</div>
             </div>
           </div>
 
@@ -199,7 +218,10 @@
 
         <!-- Real data sensors -->
         <div class="mt-4 bg-[#0f1110] border border-white/10 rounded-2xl p-3 text-xs">
-          <div class="text-[#777] mb-1.5">real sensor data (live)</div>
+          <div class="flex justify-between items-center mb-1.5">
+            <div class="text-[#777]">real sensor data (live)</div>
+            <button onclick="downloadRealData()" class="text-[10px] px-2 py-0.5 border border-white/20 rounded hover:bg-white/5">download data</button>
+          </div>
           <div class="grid grid-cols-3 gap-2">
             <div class="sensor">Room: <span id="sensor-temp">21.7</span>°C</div>
             <div class="sensor">Humidity: <span id="sensor-humidity">47</span>%</div>
@@ -609,18 +631,6 @@
       doAction(needs[0].a);
     }
 
-    // ==================== VISUAL EFFECTS ====================
-    function showWater() {
-      const d = document.getElementById('water-drops');
-      d.setAttribute('opacity', '1');
-      setTimeout(() => d.setAttribute('opacity', '0'), 950);
-    }
-    function showSun() {
-      const r = document.getElementById('sun-rays');
-      r.setAttribute('opacity', '0.85');
-      setTimeout(() => r.setAttribute('opacity', '0'), 1800);
-    }
-
     // User (me) stepping in
     function userIntervention(action) {
       doAction(action);
@@ -709,6 +719,43 @@
       // last watered rough estimate
       const mins = Math.floor(Math.random() * 60) + 20;
       document.getElementById('sensor-last').textContent = `${mins}m ago`;
+
+      // Update live photo timestamp (real data feel)
+      const tsEl = document.getElementById('photo-timestamp');
+      if (tsEl) {
+        const now = new Date();
+        tsEl.textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+      }
+    }
+
+    function downloadRealData() {
+      const data = {
+        exported_at: new Date().toISOString(),
+        plant: {
+          name: state.name,
+          age_hours: state.ageHours,
+          height_cm: state.height,
+          bloom_progress: state.bloomProgress,
+          current_stats: {
+            moisture: state.moisture,
+            sunlight: state.sunlight,
+            happiness: state.happiness,
+            health: state.health
+          }
+        },
+        history: metricsHistory,
+        activity_log: logEntries,
+        chat: chatHistory
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `claude-fable-5-lumen-data-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
     function recordMetrics() {

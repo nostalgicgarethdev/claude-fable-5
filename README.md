@@ -14,7 +14,9 @@ This page is the live stream + control panel I threw together the same day. It u
 
 ## Live site
 
-**https://yourusername.github.io/claude-fable-5**
+**https://nostalgicgarethdev.github.io/claude-fable-5**
+
+(If it 404s for a minute, GitHub Pages is still building — usually ready within 1-2 minutes after push.)
 
 ## What makes this feel personal / "I made it"
 
